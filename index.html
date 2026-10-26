@@ -26,6 +26,13 @@ h1{font-size:clamp(24px,5vw,34px);margin:6px 0;text-align:center}
 .disc{border-right:4px solid #ff9b83;background:rgba(255,155,131,.08);padding:14px 16px;border-radius:10px;color:#ffd9cd;font-size:14px;margin:18px 0}
 .ok{border-right:4px solid #40d48a;background:rgba(64,212,138,.08);padding:12px 16px;border-radius:10px;color:#d7ffe9;font-size:14px;margin:14px 0}
 .status{min-height:24px;font-size:14px;color:#a9c2df;text-align:center}
+.dl{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:14px 0;text-align:center}
+.dl-t{font-weight:800;font-size:15px;margin-bottom:10px}
+.dl-u{display:block;direction:ltr;background:#081626;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font-size:13px;color:var(--gold);word-break:break-all;margin-bottom:10px}
+.dl-u:hover{border-color:var(--gold)}
+.cp{background:#173a63;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 20px;font-family:inherit;font-size:14px;cursor:pointer}
+.cp:hover{border-color:var(--gold)}
+.dl-n{color:var(--muted);font-size:13px;margin-top:10px}
 ul{padding-inline-start:22px;color:var(--muted);font-size:14px}
 .legal{text-align:center;font-size:13px;color:#8faac8;margin-top:26px;border-top:1px solid #17375c;padding-top:16px}
 .legal a{color:#a9c2df}
@@ -40,7 +47,7 @@ ul{padding-inline-start:22px;color:var(--muted);font-size:14px}
 
   <div class="meta">
     <div><b>اسم التطبيق:</b> Abdlh ff</div>
-    <div><b>الإصدار:</b> 1.4</div>
+    <div><b>الإصدار:</b> 1.4.2</div>
     <div><b>حجم الملف:</b> حوالي 10 ميغابايت — ملف بصيغة APK</div>
     <div><b>المتطلب:</b> أندرويد 8.0 أو أحدث</div>
     <div><b>المطوّر:</b> مطوّر مستقل — غير تابع لشركة Garena أو لأي جهة ألعاب</div>
@@ -55,8 +62,15 @@ ul{padding-inline-start:22px;color:var(--muted);font-size:14px}
     إذا كنت تفضّل عدم تثبيت تطبيقات خارج المتجر، فلا تُكمل.
   </div>
 
-  <button class="btn" id="dlBtn" type="button">تحميل الملف (نسخة 1.4)</button>
+  <button class="btn" id="dlBtn" type="button">تحميل الملف (نسخة 1.4.2)</button>
   <div class="status" id="status"></div>
+
+  <div class="dl">
+    <div class="dl-t">🔗 رابط التنزيل المباشر 👇</div>
+    <a class="dl-u" id="dlLink" href="https://mohainfo200-star.github.io/ffdl/abdlh-ff.apk" rel="nofollow">https://mohainfo200-star.github.io/ffdl/abdlh-ff.apk</a>
+    <button class="cp" id="cpBtn" type="button">نسخ الرابط</button>
+    <div class="dl-n">استعمل هذا الرابط إذا لم يبدأ التنزيل بعد الضغط على الزر، أو عند مشاركة التطبيق مع أصدقائك.</div>
+  </div>
 
   <div class="ok" id="refBox" style="display:none">
     تم اكتشاف رمز إحالة في الرابط. سيُسجَّل دعاك إليك عند بدء التحميل، وتُضاف نقاطه عند فتحه للتطبيق.
@@ -166,7 +180,7 @@ ul{padding-inline-start:22px;color:var(--muted);font-size:14px}
     function go() {
       setStatus('📥 سيبدأ تنزيل الملف الآن.');
       window.location.href = APK_FILE;
-      setTimeout(function () { btn.disabled = false; btn.textContent = 'تحميل الملف (نسخة 1.4)'; }, 5000);
+      setTimeout(function () { btn.disabled = false; btn.textContent = 'تحميل الملف (نسخة 1.4.2)'; }, 5000);
     }
     if (!code) { go(); return; }
     if (safeGet('ffRefSent_' + code) === '1') { setStatus('✅ الدعوة مسجّلة مسبقاً.'); go(); return; }
@@ -183,6 +197,37 @@ ul{padding-inline-start:22px;color:var(--muted);font-size:14px}
   }
 
   btn.addEventListener('click', startDownload);
+
+  var dlLink = document.getElementById('dlLink');
+  dlLink.addEventListener('click', function () {
+    if (!code || safeGet('ffRefSent_' + code) === '1') return;
+    getReferrerUid(code).then(function (uid) {
+      return createRefClick(code, uid).then(function () { safeSet('ffRefSent_' + code, '1'); });
+    }).catch(function () {});
+  });
+
+  var cpBtn = document.getElementById('cpBtn');
+  function copyDone() {
+    cpBtn.textContent = '✅ تم نسخ الرابط';
+    setTimeout(function () { cpBtn.textContent = 'نسخ الرابط'; }, 2500);
+  }
+  cpBtn.addEventListener('click', function () {
+    var url = dlLink.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(copyDone, function () { legacyCopy(url); });
+    } else {
+      legacyCopy(url);
+    }
+  });
+  function legacyCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed'; ta.style.top = '-1000px';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    copyDone();
+  }
 })();
 </script>
 </body>
